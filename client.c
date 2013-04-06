@@ -1,12 +1,30 @@
 /*
 
-Author: Cooler_
-E-mail: c00f3r[at]gmail[dot]com
-BugSec Security TEAM
-http://code.google.com/p/bugsec/
-thanks: m0nad,_mlk_,IAK,delfo,c0lt7r,poseidon,joey,fokerbug,zepplin,otacon,backbone,nibbles,voidpointer,muzgo...
 
-just another raw socket client
+Author:Antonio Costa aka " Cooler_ "
+contact: c00f3r[at]gmail[dot]com
+
+    Copyright (C) 2013 ninja shell authors,
+    
+    This file is part of ninja shell
+    
+    ninja shell is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ninja shell is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Thanks: Iak(Tiago Natel),m0nad(Victor Ramos)
+
+What is this ?
+just another raw socket client shell
  
 */
 #include <stdio.h>    
