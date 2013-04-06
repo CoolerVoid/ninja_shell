@@ -11,14 +11,14 @@ to make this you can use nemesis,hping or client.c to send commands...
 
 ##to run:
 
+on server machine:
+
+\# gcc -o server server.c; ./server
 
 on client machine:
 
-\# gcc -o client client.c
+\# gcc -o client client.c; ./client SERVER__IP
 
-on server machine:
-
-\# gcc -o server server.c
 
 
 
