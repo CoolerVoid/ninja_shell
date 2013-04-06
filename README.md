@@ -12,10 +12,10 @@ to make this you can use nemesis,hping or client.c to send commands...
 to run:
 
 on client machine:
-# gcc -o client client.c
+\# gcc -o client client.c
 
 on server machine:
-# gcc -o server server.c
+\# gcc -o server server.c
 
 
 
