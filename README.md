@@ -24,9 +24,9 @@ on client machine:
 ## Or version that write encrypt payload with blowfish
 need openssl lib
 on deb based linux follow:
-# apt-get install openssl-dev
+\# apt-get install openssl-dev
 on rpm based linux follow:
-# yum install openssl-devel
+\# yum install openssl-devel
 
 
 on server machine:
