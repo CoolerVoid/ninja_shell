@@ -21,7 +21,7 @@ on client machine:
 \# gcc -o client client.c; ./client SERVER__IP
 
 
-## Or version that write encrypt payload with blowfish
+## Or version that make encrypted payload with blowfish
 need openssl lib
 on deb based linux follow:
 \# apt-get install openssl-dev
