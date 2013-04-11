@@ -1,4 +1,4 @@
-ninja_shell
+ninja_shell beta
 ===========
 
 ![Alt text](http://media.tumblr.com/bbec54d04a3712341e49f10db5d07a83/tumblr_inline_mfmd9n78p81r7if29.gif)
