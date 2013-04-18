@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
   exit(1);
  }
   fprintf(stdout,"\nIP: %s \n",IP);    
-  fprintf(stdout,"fate  : %s\n",argv[1]);    
+ // fprintf(stdout,"fate  : %s\n",argv[1]);    
      
   destino=(char *)alloca(sizeof(IP)+1);  
   strncpy(destino,IP, (sizeof(IP)) );
