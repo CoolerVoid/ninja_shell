@@ -3,8 +3,8 @@ ninja_shell v2.0
 
 ![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/giphy.gif?raw=true)
 
-This is a custom raw socket shell aka port knoking with AES 256 CBC, https://en.wikipedia.org/wiki/Port_knocking
-using specific tcp flags ,FIN,URG,PSH and use AES 256 CBC cipher at communication.
+Raw socket shell with AES 256 CBC and Port Knocking technique( https://en.wikipedia.org/wiki/Port_knocking )
+using specific tcp flags ,FIN,URG,PSH and use AES 256 CBC cipher at communication
 
 *You dont can see the PORT OPEN,only you send specific flags,
 to make this you can use nemesis,hping or client.c to send commands with especific flags...
