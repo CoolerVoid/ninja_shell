@@ -5,7 +5,7 @@ ninja_shell beta
 
 This is another custom raw socket shell ,
 using specific tcp flags ,FIN,URG,PSH, 
-too use blowfish to encrypt payloads.
+use AES 256 cipher at communication.
 
 *You dont can see the PORT OPEN,only you send specific flags,
 to make this you can use nemesis,hping or client.c to send commands...
@@ -21,7 +21,7 @@ on client machine:
 \# gcc -o client client.c; ./client SERVER__IP
 
 
-## Or version that make encrypted payload with blowfish
+## Or version that make encrypted payload with AES 256 CBC
 need openssl lib
 on deb based linux follow:
 \# apt-get install openssl-dev
@@ -31,11 +31,11 @@ on rpm based linux follow:
 
 on server machine:
 
-\# gcc -o server_blowfish server_blowfish.c -lssl -lcrypto; ./server
+\# gcc -o server server.c -lssl -lcrypto; ./server
 
 on client machine:
 
-\# gcc -o client_blowfish client_blowfish.c -lssl -lcrypto; ./client SERVER__IP
+\# gcc -o client client.c -lssl -lcrypto; ./client SERVER__IP
 
 
 
