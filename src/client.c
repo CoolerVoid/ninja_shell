@@ -115,10 +115,10 @@ int main(int argc, char *argv[])
 	while(1) 
 	{     
 
- 		input=(char *)alloca(MAX*sizeof(char));
+ 		input=(char *)alloca(MAX*sizeof(char)+1);
 		bzero(input, MAX);
 		fprintf(stdout,"CMD:");
-	   	if(fgets(input,MAX-1,stdin)==NULL)
+	   	if(fgets(input,MAX,stdin)==NULL)
 			exit(0); 
   // chomp(input);
 		int len4=strlen(input);
