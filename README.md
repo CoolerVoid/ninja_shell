@@ -13,11 +13,9 @@ A raw socket is a socket that takes packets, bypasses the normal TCP/IP processi
 
 Unless you're a programmer, a kernel hacker, or really really into security, you will most likely not need to deal much with these. But it's good to know what they are, in case you find yourself in one of the above scenarios. 
 
+https://en.wikipedia.org/wiki/Raw_socket
 
-*You dont can see the PORT OPEN,only you send specific flags,
-to make this you can use nemesis,hping or client.c to send commands with especific flags...
-
-##Diagram how works
+##Diagram how this tool works
 ![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/diagram.png?raw=true)
 
 
