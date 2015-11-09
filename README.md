@@ -29,8 +29,12 @@ on client machine:
 So to get this lib you can follow this examples:
 
 on deb based linux follow:
+
 \# apt-get install openssl-dev
+
+
 on rpm based linux follow:
+
 \# yum install openssl-devel
 
 
