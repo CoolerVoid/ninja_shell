@@ -43,7 +43,6 @@ Custom raw socket client shell use AES 256 CBC
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
-#include <string.h> 
 #define SIZE 50
 #define BUF 19
  
