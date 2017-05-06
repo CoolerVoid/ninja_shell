@@ -3,8 +3,8 @@ ninja_shell v2.0
 
 ![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/giphy.gif?raw=true)
 
-Raw socket shell with AES 256 CBC and Port Knocking technique( https://en.wikipedia.org/wiki/Port_knocking )
-using specific tcp flags ,FIN,URG,PSH and use AES 256 CBC cipher at communication
+Raw socket shell with AES 128 XTS and Port Knocking technique( https://en.wikipedia.org/wiki/Port_knocking )
+using specific tcp flags ,FIN,URG,PSH and use AES 128 XTS cipher at communication
 
 #raw socket ?
  Raw mode is basically there to allow you to bypass some of the way that your computer handles TCP/IP. Rather than going through the normal layers of encapsulation/decapsulation that the TCP/IP stack on the kernel does, you just pass the packet to the application that needs it. No TCP/IP processing -- so it's not a processed packet, it's a raw packet. The application that's using the packet is now responsible for stripping off the headers, analyzing the packet, all the stuff that the TCP/IP stack in the kernel normally does for you.

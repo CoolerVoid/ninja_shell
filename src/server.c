@@ -346,7 +346,7 @@ aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIP
   	int x=0, nrounds = 5;
   	unsigned char key[32], iv[32];
   
-  	x = EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), salt, key_data, key_data_len, nrounds, key, iv);
+  	x = EVP_BytesToKey(EVP_aes_128_xts(), EVP_sha1(), salt, key_data, key_data_len, nrounds, key, iv);
 
   	if(x != 32) 
   	{
@@ -355,9 +355,9 @@ aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIP
   	}
 
   	EVP_CIPHER_CTX_init(e_ctx);
-  	EVP_EncryptInit_ex(e_ctx, EVP_aes_256_cbc(), NULL, key, iv);
+  	EVP_EncryptInit_ex(e_ctx, EVP_aes_128_xts(), NULL, key, iv);
   	EVP_CIPHER_CTX_init(d_ctx);
-  	EVP_DecryptInit_ex(d_ctx, EVP_aes_256_cbc(), NULL, key, iv);
+  	EVP_DecryptInit_ex(d_ctx, EVP_aes_128_xts(), NULL, key, iv);
 
   	return 0;
 }
