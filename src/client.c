@@ -24,7 +24,7 @@ contact: c00f3r[at]gmail[dot]com
 Thanks: Iak(Tiago Natel),m0nad(Victor Ramos)
 
 What is this ?
-Custom raw socket client shell use AES 256 CBC
+Custom raw socket client shell use AES256-GCM
  
 */
 #include <stdio.h>    
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
   	if(argc < 2) 
   	{
-  		puts("follow example ./proc host\n Ninja Shell v2.0\nCustom Raw socket client server shell using AES 256 cbc \n by Cooler_ \n contact: coolerlair[at]gmail[dot]com\n");
+  		puts("follow example ./proc host\n Ninja Shell v2.1\nCustom Raw socket client server shell using AES256-GCM \n by Cooler_ \n contact: coolerlair[at]gmail[dot]com\n");
   		exit(0);    
   	}    
 
