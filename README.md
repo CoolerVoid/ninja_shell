@@ -18,6 +18,9 @@ Unless you're a programmer, a kernel hacker, or really really into security, you
 https://en.wikipedia.org/wiki/Raw_socket
 
 ## To run you need use root because raw socket need:
+
+To compile
+
 \# make
 
 on server machine:
@@ -35,8 +38,10 @@ So to get this lib you can follow this examples:
 on deb based linux follow:
 
 \# apt-get install openssl-dev
+
 or
-# apt-get install ssldev or ssl-dev
+
+\# apt-get install ssldev or ssl-dev
 
 
 on rpm based linux follow:
