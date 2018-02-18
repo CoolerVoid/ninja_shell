@@ -35,6 +35,8 @@ So to get this lib you can follow this examples:
 on deb based linux follow:
 
 \# apt-get install openssl-dev
+or
+# apt-get install ssldev or ssl-dev
 
 
 on rpm based linux follow:
