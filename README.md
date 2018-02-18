@@ -17,11 +17,7 @@ Unless you're a programmer, a kernel hacker, or really really into security, you
 
 https://en.wikipedia.org/wiki/Raw_socket
 
-##Diagram how this tool works
-![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/diagram.png?raw=true)
-
-
-##to run you need use root because raw socket need:
+## To run you need use root because raw socket need:
 \# make
 
 on server machine:
