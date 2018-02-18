@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-W -Wall -Wextra -O2 -fstack-protector-all
-DFLAGS=-D_FORTIFY_SOURCE=2
+CFLAGS=
+DFLAGS=-g
 LDFLAGS=-Wl,-z,relro,-z,now -lssl -lcrypto
 DIR=src/
 DIROUT=bin/
