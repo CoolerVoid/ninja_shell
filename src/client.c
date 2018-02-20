@@ -50,11 +50,20 @@ Custom raw socket client shell using AES256-GCM
 #define PORT  667
 #define MAX    9192
 #define ERRO   -1
-
+// edit here your keys
  unsigned char key[]="magic1337";
  unsigned char iv[16]="1234567890123456";
  unsigned char aad[16]="abcdefghijklmnop"; //dummy
  int k;
+#include <assert.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stddef.h>
+
+#define XFREE(x) xfree((void **)x);
+#define MUL_NO_OVERFLOW ((size_t)1 << (sizeof(size_t)*4))
+void *xmallocarray (size_t nmemb, size_t size);
+void xfree(void **ptr);
 
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes);
 char *decode64 (const void *b64_decode_this, int decode_this_many_bytes);
@@ -62,7 +71,6 @@ void fazerpacote(char * dest_addr, unsigned short dest_port,char *payload);
 unsigned short in_cksum(unsigned short *, int);    
 int orion_getHostByName(const char* name, char* buffer);  
 void listening_raw();
-void chomp(char * str);
 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad, int aad_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext, unsigned char *tag);
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad, int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
 
@@ -115,12 +123,11 @@ int main(int argc, char *argv[])
   	{     
       unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
-   		char *input=(char *)malloc(MAX*sizeof(char)+1);
+   		char *input=xmallocarray(MAX+1,sizeof(char));
   		bzero(input, MAX);
   		fprintf(stdout,"CMD:");
   	   	if(fgets(input,MAX,stdin)==NULL)
   			   exit(0); 
-      chomp(input);
       unsigned char *encode_64_input=encode64(input,strlen((char *)input));
       k = encrypt(encode_64_input, strlen(encode_64_input), aad, sizeof(aad), key, iv, ciphertext, tag);
      //       printf("Debug input ciphertext: %s --\n",ciphertext);
@@ -143,6 +150,39 @@ int main(int argc, char *argv[])
  exit(1);
 }    
 
+
+
+// based in OpenBSD reallocarray() function http://man.openbsd.org/reallocarray.3
+void *xmallocarray (size_t nmemb, size_t size) 
+{
+  if ((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) && nmemb > 0 && SIZE_MAX / nmemb < size) 
+  {
+    puts("integer overflow block");
+    return NULL;
+  }
+
+  void *ptr = malloc (nmemb*size);
+
+  if (ptr == NULL)
+  {
+ 
+    puts("error in xmallocarray() function");
+    exit(1);
+  }
+
+  return ptr;
+}
+
+void xfree(void **ptr) 
+{
+  assert(ptr);
+  if( ptr != NULL )
+        {
+    free(*ptr);
+    *ptr=NULL;  
+        }
+  
+}
      
 void fazerpacote(char *dest_addr, unsigned short dest_port, char * payload)
 {    
@@ -363,7 +403,8 @@ void listening_raw()
 
           char *decode_64_output=decode64(pt,strlen(pt)-4);
           fprintf(stdout,"Result: %s \n",decode_64_output);
-
+          free(decode_64_output);
+          free(decode_64_input);
 
 // todo free the heap...  add xfree() function here
 
@@ -375,18 +416,6 @@ void listening_raw()
 }
 
 
-void chomp(char * str)
-{
-  	while(*str) 
-  	{
-    		if(*str == '\n' || *str == '\r') 
-    		{
-     			*str = 0;
-     			return;
-    		}
-    		str++;
-  	}
-} 
 
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes){
     	BIO *b64_bio, *mem_bio;      

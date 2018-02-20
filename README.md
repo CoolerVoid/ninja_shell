@@ -1,4 +1,4 @@
-ninja_shell v2.0
+ninja_shell v2.1
 ==================
 
 ![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/giphy.gif?raw=true)
