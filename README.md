@@ -17,6 +17,23 @@ Unless you're a programmer, a kernel hacker, or really really into security, you
 
 https://en.wikipedia.org/wiki/Raw_socket
 
+
+## Install OpenSSL lib
+
+Deb based linux follow:
+
+\# apt-get install openssl-dev
+
+or
+
+\# apt-get install ssldev or ssl-dev
+
+
+on rpm based linux follow:
+
+\# yum install openssl-devel
+
+
 ## To run you need use root because raw socket need:
 
 To compile
@@ -29,24 +46,8 @@ on server machine:
 
 on client machine:
 
-\# bin/client SERVER__IP
+\# bin/client the_SERVER_IP_addr
 
-
-## if return errors at make, you need openssl lib
-So to get this lib you can follow this examples:
-
-on deb based linux follow:
-
-\# apt-get install openssl-dev
-
-or
-
-\# apt-get install ssldev or ssl-dev
-
-
-on rpm based linux follow:
-
-\# yum install openssl-devel
 
 
 
