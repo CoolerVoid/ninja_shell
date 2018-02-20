@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=
-DFLAGS=-g
+DFLAGS=
 LDFLAGS=-Wl,-z,relro,-z,now -lssl -lcrypto
 DIR=src/
 DIROUT=bin/
