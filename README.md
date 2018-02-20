@@ -8,7 +8,8 @@ using specific tcp flags ,FIN,URG,PSH and use AES256-GCM cipher at communication
 
 
 
-#raw socket ?
+##raw socket ?
+
  Raw mode is basically there to allow you to bypass some of the way that your computer handles TCP/IP. Rather than going through the normal layers of encapsulation/decapsulation that the TCP/IP stack on the kernel does, you just pass the packet to the application that needs it. No TCP/IP processing -- so it's not a processed packet, it's a raw packet. The application that's using the packet is now responsible for stripping off the headers, analyzing the packet, all the stuff that the TCP/IP stack in the kernel normally does for you.
 
 A raw socket is a socket that takes packets, bypasses the normal TCP/IP processing, and sends them to the application that wants them.
@@ -48,7 +49,7 @@ on client machine:
 
 \# bin/client the_SERVER_IP_addr
 
-
+To change keys edit /src/server.c and /src/cleint.c, and compile...
 
 
 
