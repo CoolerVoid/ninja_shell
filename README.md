@@ -3,8 +3,8 @@ ninja_shell v2.1
 
 ![Alt text](https://github.com/CoolerVoid/ninja_shell/blob/master/docs/img/giphy.gif?raw=true)
 
-Raw socket shell with AES256-GCM and Port Knocking technique( https://en.wikipedia.org/wiki/Port_knocking )
-using specific tcp flags ,FIN,URG,PSH and use AES256-GCM cipher at communication.
+Raw socket shell with AES256-GCM, using Port Knocking technique( https://en.wikipedia.org/wiki/Port_knocking )
+using specific tcp flags ,FIN,URG and PSH.
 
 
 
