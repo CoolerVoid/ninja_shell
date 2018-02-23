@@ -53,10 +53,8 @@ just another raw socket shell server
 #include <stdint.h>
 #include <stddef.h>
 
-#define XFREE(x) xfree((void **)x);
 #define MUL_NO_OVERFLOW	((size_t)1 << (sizeof(size_t)*4))
 void *xmallocarray (size_t nmemb, size_t size);
-void xfree(void **ptr);
 
 
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes);
@@ -159,16 +157,6 @@ void *xmallocarray (size_t nmemb, size_t size)
 	return ptr;
 }
 
-void xfree(void **ptr) 
-{
-	assert(ptr);
-	if( ptr != NULL )
-        {
-		free(*ptr);
-		*ptr=NULL;	
-        }
-	
-}
 
      
 void fazerpacote(char *dest_addr, unsigned short dest_port, char * payload)

