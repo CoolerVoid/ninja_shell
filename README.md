@@ -47,7 +47,7 @@ on server machine:
 
 on client machine:
 
-\# bin/client the_SERVER_IP_addr
+\# bin/client the_SERVER_IP_addr (note  don't use  localhost  or 127.0.0.1 put real ip addr, this version suport only IPV4)
 
 To change keys edit /src/server.c and /src/cleint.c, and compile...
 
