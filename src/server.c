@@ -142,7 +142,7 @@ void *xmallocarray (size_t nmemb, size_t size)
 	if ((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) && nmemb > 0 && SIZE_MAX / nmemb < size) 
 	{
 		puts("integer overflow block");
-		return NULL;
+		exit(0);
 	}
 
 	void *ptr = malloc (nmemb*size);
@@ -151,7 +151,7 @@ void *xmallocarray (size_t nmemb, size_t size)
 	{
  
 		puts("error in xmallocarray() function");
-		exit(1);
+		exit(0);
 	}
 
 	return ptr;
